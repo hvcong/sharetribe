@@ -167,3 +167,5 @@ gem 'transit-ruby', '~> 0.8.1'
 gem 'redcarpet', '~> 3.4.0'
 
 gem 'intercom'
+
+gem 'twitter_cldr'
