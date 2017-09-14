@@ -80,7 +80,7 @@ const removeLoadedMonths = (months, loadedMonths) => ({
 });
 
 const convertBlocksFromUTCMidnightDates = (blocks) =>
-  blocks.filter((block) => block.getIn([':attributes', ':status']) != ':rejected').map((block) =>
+  blocks.filter((block) => block.getIn([':attributes', ':status']) !== ':rejected').map((block) =>
     block.updateIn([':attributes', ':start'], fromMidnightUTCDate)
          .updateIn([':attributes', ':end'], fromMidnightUTCDate));
 
