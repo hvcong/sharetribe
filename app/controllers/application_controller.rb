@@ -35,14 +35,11 @@ class ApplicationController < ActionController::Base
     :cannot_access_without_confirmation,
     :ensure_consent_given,
     :ensure_user_belongs_to_community,
-    :set_display_expiration_notice
+    :set_display_expiration_notice,
+    :delayed_setup_intercom_user
 
   # This updates translation files from WTI on every page load. Only useful in translation test servers.
   before_action :fetch_translations if APP_CONFIG.update_translations_on_every_page_load == "true"
-
-  #this shuold be last
-  before_action :push_reported_analytics_event_to_js
-  before_action :push_reported_gtm_data_to_js
 
   helper_method :root, :logged_in?, :current_user?
 
@@ -438,36 +435,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # Does a push to Google Analytics on next page load
-  # the reason to go via session is that the actions that cause events
-  # often do a redirect.
-  # This is still not fool proof as multiple redirects would lose
-  def report_analytics_event(category, action, opt_label)
-    session[:analytics_event] = [category, action, opt_label]
-  end
-
-  # Does a push to Google Tag Manager on next page load
-  # same disclaimers as before apply
-  def report_to_gtm(map)
-    session[:gtm_datalayer] = map
-  end
-
-  # if session has analytics event
-  # report that and clean session
-  def push_reported_analytics_event_to_js
-    if session[:analytics_event]
-      @analytics_event = session[:analytics_event]
-      session.delete(:analytics_event)
-    end
-  end
-
-  def push_reported_gtm_data_to_js
-    if session[:gtm_datalayer]
-      @gtm_datalayer = session[:gtm_datalayer]
-      session.delete(:gtm_datalayer)
-    end
-  end
-
   def fetch_translations
     WebTranslateIt.fetch_translations
   end
@@ -488,6 +455,7 @@ class ApplicationController < ActionController::Base
     if person
       sign_in(person)
       @current_user = person
+      @delayed_setup_intercom_user = true
 
       # Clean the URL from the used token
       path_without_auth_token = URLUtils.remove_query_param(request.fullpath, "auth")
@@ -629,5 +597,13 @@ class ApplicationController < ActionController::Base
 
   def render_not_found!(msg = "Not found")
     raise ActionController::RoutingError.new(msg)
+  end
+
+  def setup_intercom_user
+    AnalyticService::API::Intercom.setup_person(person: @current_user, community: @current_community)
+  end
+
+  def delayed_setup_intercom_user
+    setup_intercom_user if @delayed_setup_intercom_user
   end
 end
