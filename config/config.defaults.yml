@@ -448,13 +448,15 @@ default: &default_settings
   stripe_private_key_pattern: "sk_test_.{24}"
   stripe_publishable_key_pattern: "pk_test_.{24}"
 
-  # Stripe allows to hold funds up to 60 days
-  stripe_max_booking_date: 60
+  # Stripe allows to hold funds up to 90 days
+  # (85 and not 90 or 89 as a security, also because timezones are not 
+  # managed and transactions are automatically marked as completed)
+  stripe_max_booking_date: 85
 
   # System supports different payment modes, see https://stripe.com/docs/connect/charges for details
+  # Sharetribe supports only managed accounts, and two payment modes:
   #
   # :separate    - Separate charges and transfers, payment goes to admin account, with delayed transfer to seller
-  # :direct      - Direct charges, payment goes to seller account, with application fee to admin account
   # :destination - Destination charges, payment goes to admin account, with instant partial transfer to seller  
   #
   # By default :destination mode is used
