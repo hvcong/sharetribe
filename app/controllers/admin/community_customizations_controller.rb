@@ -26,7 +26,7 @@ class Admin::CommunityCustomizationsController < Admin::AdminBaseController
 
   def update_details
     update_results = []
-    analytic = AnalyticService::CommunityCustomizations.new(@current_user)
+    analytic = AnalyticService::CommunityCustomizations.new(user: @current_user, community: @current_community)
 
     customizations = @current_community.locales.map do |locale|
       permitted_params = [
@@ -66,7 +66,7 @@ class Admin::CommunityCustomizationsController < Admin::AdminBaseController
       state_changed = Admin::OnboardingWizard.new(@current_community.id)
         .update_from_event(:community_customizations_updated, customizations)
       if state_changed
-        Analytics.record_event(flash, "km_record", {km_event: "Onboarding slogan/description created"})
+        record_event(flash, "km_record", {km_event: "Onboarding slogan/description created"})
 
         flash[:show_onboarding_popup] = true
       end
